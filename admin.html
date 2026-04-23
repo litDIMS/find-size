@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STAMPIFY 관리자</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #b51e28;
+      --brand-dark: #8e1720;
+      --bg: #f5f5f5;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --card: #ffffff;
+      --success: #059669;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 80px;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.3px;
+    }
+    header h1 .brand { color: var(--brand); }
+
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      padding: 9px 14px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn:hover { background: #f9fafb; border-color: #d1d5db; }
+    .btn.primary {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+    .btn.primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+    .btn.danger {
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+    .btn.danger:hover { background: #fef2f2; }
+
+    /* 도움말 */
+    .notice {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #78350f;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .notice strong { color: #7c2d12; }
+
+    /* 검색 */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(181, 30, 40, 0.12);
+    }
+    .filter {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    /* 모델 그리드 */
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 24px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card.filled {
+      border-color: #a7f3d0;
+      background: #f0fdf4;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .model-name {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--brand);
+      letter-spacing: -0.3px;
+    }
+    .model-size {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .thumb-preview {
+      width: 100%;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #f3f4f6;
+      display: none;
+    }
+    .thumb-preview.show { display: block; }
+
+    .card input[type="text"],
+    .card input[type="url"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+    }
+    .card input:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+
+    .card-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: -4px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .card-btn {
+      flex: 1;
+      padding: 7px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .card-btn:hover { background: #000; }
+    .card-btn.secondary {
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .card-btn.secondary:hover { background: #f9fafb; color: var(--text); }
+
+    .saved-flash {
+      color: var(--success);
+      font-size: 11px;
+      text-align: center;
+      margin-top: 4px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .saved-flash.show { opacity: 1; }
+
+    /* 모달 토스트 */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+    @media (max-width: 500px) {
+      header h1 { font-size: 18px; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .card { padding: 12px; }
+      .model-name { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <header>
+      <h1><span class="brand">STAMPIFY</span> 관리자</h1>
+      <div class="top-actions">
+        <a href="index.html" class="btn">← 사이트로 돌아가기</a>
+        <button class="btn" id="export-btn" type="button">내보내기 (JSON)</button>
+        <button class="btn" id="import-btn" type="button">불러오기</button>
+        <input type="file" id="import-file" accept="application/json" style="display:none;" />
+        <button class="btn danger" id="reset-btn" type="button">전체 초기화</button>
+      </div>
+    </header>
+
+    <div class="notice">
+      <strong>⚠ 주의</strong> 이 페이지의 설정은 <b>사용하는 브라우저에만</b> 저장됩니다. 다른 기기·다른 브라우저에서도 적용하려면 "내보내기"로 JSON 파일을 저장한 뒤 해당 기기에서 "불러오기"로 적용하세요. 링크·썸네일을 수정하면 자동 저장됩니다.
+    </div>
+
+    <div class="toolbar">
+      <input type="text" class="search-input" id="search" placeholder="모델명으로 검색 (예: 43103, 30파이)" />
+      <select class="filter" id="filter">
+        <option value="all">전체</option>
+        <option value="empty">미입력만 보기</option>
+        <option value="filled">입력완료만 보기</option>
+      </select>
+    </div>
+
+    <div class="section-title">사각형 스탬프 (세로 × 가로)</div>
+    <div class="grid" id="rect-grid"></div>
+
+    <div class="section-title">원형 스탬프 (지름)</div>
+    <div class="grid" id="circle-grid"></div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script>
+    const rectGrid = document.getElementById('rect-grid');
+    const circleGrid = document.getElementById('circle-grid');
+    const searchEl = document.getElementById('search');
+    const filterEl = document.getElementById('filter');
+    const toastEl = document.getElementById('toast');
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 1800);
+    }
+
+    function makeCard(m, type) {
+      const cfg = getModelConfig(m.model);
+      const isFilled = (cfg.link && cfg.link.trim()) || (cfg.thumbnail && cfg.thumbnail.trim());
+      const sizeText = (type === 'rect')
+        ? `세로 ${m.h}mm × 가로 ${m.w}mm`
+        : `지름 ${m.d}mm`;
+
+      const card = document.createElement('div');
+      card.className = 'card' + (isFilled ? ' filled' : '');
+      card.dataset.model = m.model;
+      card.dataset.filled = isFilled ? '1' : '0';
+
+      card.innerHTML = `
+        <div class="card-head">
+          <div class="model-name">${m.model}</div>
+          <div class="model-size">${sizeText}</div>
+        </div>
+        <img class="thumb-preview ${cfg.thumbnail ? 'show' : ''}" src="${cfg.thumbnail || ''}" onerror="this.classList.remove('show')" alt="" />
+        <div class="card-label">구매 링크</div>
+        <input type="url" class="link-input" placeholder="https://..." value="${escapeAttr(cfg.link || '')}" />
+        <div class="card-label">썸네일 URL</div>
+        <input type="url" class="thumb-input" placeholder="https://.../image.jpg" value="${escapeAttr(cfg.thumbnail || '')}" />
+        <div class="card-actions">
+          <button class="card-btn upload-btn" type="button">이미지 업로드</button>
+          <button class="card-btn secondary clear-btn" type="button">지우기</button>
+          <input type="file" class="upload-input" accept="image/*" style="display:none;" />
+        </div>
+        <div class="saved-flash">저장됨</div>
+      `;
+
+      const linkInput  = card.querySelector('.link-input');
+      const thumbInput = card.querySelector('.thumb-input');
+      const thumbImg   = card.querySelector('.thumb-preview');
+      const flash      = card.querySelector('.saved-flash');
+      const uploadBtn  = card.querySelector('.upload-btn');
+      const uploadInp  = card.querySelector('.upload-input');
+      const clearBtn   = card.querySelector('.clear-btn');
+
+      function save() {
+        const data = {
+          link: linkInput.value.trim(),
+          thumbnail: thumbInput.value.trim(),
+        };
+        setModelConfig(m.model, data);
+
+        // 썸네일 미리보기
+        if (data.thumbnail) {
+          thumbImg.src = data.thumbnail;
+          thumbImg.classList.add('show');
+        } else {
+          thumbImg.classList.remove('show');
+        }
+
+        // 카드 상태
+        const filled = data.link || data.thumbnail;
+        card.classList.toggle('filled', !!filled);
+        card.dataset.filled = filled ? '1' : '0';
+
+        flash.classList.add('show');
+        setTimeout(() => flash.classList.remove('show'), 900);
+
+        applyFilter();
+      }
+
+      // blur 시 저장 (실시간 저장은 너무 빈번)
+      linkInput.addEventListener('change', save);
+      thumbInput.addEventListener('change', save);
+      thumbInput.addEventListener('input', () => {
+        // 입력 중 즉시 미리보기
+        if (thumbInput.value.trim()) {
+          thumbImg.src = thumbInput.value.trim();
+          thumbImg.classList.add('show');
+        } else {
+          thumbImg.classList.remove('show');
+        }
+      });
+
+      // 이미지 업로드 (base64로 인라인 저장)
+      uploadBtn.addEventListener('click', () => uploadInp.click());
+      uploadInp.addEventListener('change', async () => {
+        const file = uploadInp.files?.[0];
+        if (!file) return;
+        if (file.size > 500 * 1024) {
+          if (!confirm(`이 이미지는 ${Math.round(file.size/1024)}KB 입니다. 브라우저 저장 용량 제한이 있으니 가능하면 300KB 이하 이미지를 권장합니다. 계속할까요?`)) {
+            uploadInp.value = '';
+            return;
+          }
+        }
+        const b64 = await fileToDataUrl(file);
+        thumbInput.value = b64;
+        thumbImg.src = b64;
+        thumbImg.classList.add('show');
+        save();
+        showToast('썸네일이 업로드되었습니다');
+        uploadInp.value = '';
+      });
+
+      // 지우기
+      clearBtn.addEventListener('click', () => {
+        if (!confirm(`${m.model} 모델의 링크와 썸네일을 모두 지울까요?`)) return;
+        linkInput.value = '';
+        thumbInput.value = '';
+        save();
+        showToast(`${m.model} 초기화됨`);
+      });
+
+      return card;
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function escapeAttr(s) {
+      return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    // 초기 렌더
+    const all = getAllModels();
+    all.rect.forEach(m => rectGrid.appendChild(makeCard(m, 'rect')));
+    all.circle.forEach(m => circleGrid.appendChild(makeCard(m, 'circle')));
+
+    // 검색/필터
+    function applyFilter() {
+      const q = searchEl.value.trim().toLowerCase();
+      const f = filterEl.value;
+      document.querySelectorAll('.card').forEach(card => {
+        const model = card.dataset.model.toLowerCase();
+        const filled = card.dataset.filled === '1';
+        let visible = true;
+        if (q && !model.includes(q)) visible = false;
+        if (f === 'empty' && filled) visible = false;
+        if (f === 'filled' && !filled) visible = false;
+        card.style.display = visible ? '' : 'none';
+      });
+    }
+    searchEl.addEventListener('input', applyFilter);
+    filterEl.addEventListener('change', applyFilter);
+
+    // 내보내기
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const data = getConfig();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const today = new Date().toISOString().slice(0,10);
+      a.download = `stampify-config-${today}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('설정이 다운로드되었습니다');
+    });
+
+    // 불러오기
+    document.getElementById('import-btn').addEventListener('click', () => {
+      document.getElementById('import-file').click();
+    });
+    document.getElementById('import-file').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (typeof data !== 'object' || data === null) throw new Error('형식 오류');
+        if (!confirm('기존 설정을 덮어씁니다. 계속할까요?')) return;
+        saveConfig(data);
+        showToast('불러오기 완료 - 페이지를 새로고침합니다');
+        setTimeout(() => location.reload(), 800);
+      } catch (err) {
+        alert('JSON 파일을 읽지 못했습니다: ' + err.message);
+      }
+      e.target.value = '';
+    });
+
+    // 전체 초기화
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (!confirm('모든 링크와 썸네일 설정을 지웁니다. 이 작업은 되돌릴 수 없습니다. 계속할까요?')) return;
+      if (!confirm('정말 모두 지우시겠습니까?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      showToast('초기화 완료 - 새로고침합니다');
+      setTimeout(() => location.reload(), 800);
+    });
+  </script>
+</body>
+</html>
