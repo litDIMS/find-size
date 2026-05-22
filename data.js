@@ -41,7 +41,7 @@ const RECT_MODELS = [
   { model: "66130", h: 61,  w: 125 },
   { model: "78103", h: 73,  w: 98  },
   { model: "94130", h: 89,  w: 125 },
-  { model: "f1600", h: 115, w: 145 },
+  { model: "f1600", h: 115, w: 155 },
 ];
 
 // 원형 스탬프 (파이 = 지름, mm)
@@ -77,11 +77,32 @@ function findCircleModel(d) {
 }
 
 // ============================================
-// 로컬 저장소 - 구매 링크 및 썸네일
+// 저장소 계층:
+//   1. config.json (공개, GitHub 저장소) - 모든 고객에게 보이는 기본값
+//   2. localStorage (브라우저) - 관리자가 수정 중인 값, 내보낸 뒤 config.json으로 반영
 // ============================================
 const STORAGE_KEY = "stampify_model_config_v1";
 
-function getConfig() {
+// 공개 config.json (페이지 로드 시 1회 로드됨)
+let PUBLIC_CONFIG = {};
+let PUBLIC_CONFIG_LOADED = false;
+
+async function loadPublicConfig() {
+  if (PUBLIC_CONFIG_LOADED) return PUBLIC_CONFIG;
+  try {
+    // 캐시 무효화를 위해 timestamp 파라미터 추가
+    const res = await fetch('config.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      PUBLIC_CONFIG = await res.json();
+    }
+  } catch (e) {
+    console.warn('config.json 로드 실패:', e);
+  }
+  PUBLIC_CONFIG_LOADED = true;
+  return PUBLIC_CONFIG;
+}
+
+function getLocalConfig() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
@@ -89,6 +110,12 @@ function getConfig() {
   } catch (e) {
     return {};
   }
+}
+
+// 병합 설정: localStorage가 있으면 우선, 없으면 public config
+function getConfig() {
+  const local = getLocalConfig();
+  return { ...PUBLIC_CONFIG, ...local };
 }
 
 function saveConfig(cfg) {
@@ -101,7 +128,7 @@ function getModelConfig(modelName) {
 }
 
 function setModelConfig(modelName, data) {
-  const cfg = getConfig();
+  const cfg = getLocalConfig(); // 로컬만 수정
   cfg[modelName] = data;
   saveConfig(cfg);
 }
