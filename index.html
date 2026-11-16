@@ -392,7 +392,8 @@
 
     
     // 사각형 검색 (가로·세로 자동 교정)
-    document.getElementById('rect-btn').addEventListener('click', () => {
+    document.getElementById('rect-btn').addEventListener('click', async () => {
+  await loadPublicConfig();
       const inputH = parseFloat(document.getElementById('rect-h').value);
       const inputW = parseFloat(document.getElementById('rect-w').value);
 
@@ -419,7 +420,8 @@
     });
 
     // 원형 검색
-    document.getElementById('circle-btn').addEventListener('click', () => {
+    document.getElementById('circle-btn').addEventListener('click', async () => {
+  await loadPublicConfig();
       const d = parseFloat(document.getElementById('circle-d').value);
       if (!d || d <= 0) {
         resultEl.className = 'result show not-found';
