@@ -297,11 +297,12 @@
         <span class="unit">mm</span>
       </div>
       <button class="search-btn" id="rect-btn" type="button">모델 찾기</button>
-      <p class="hint">
-  ※ 긴 쪽을 가로로 입력해 주세요.<br/>
-  예) 45 × 125mm → 세로 45mm / 가로 125mm<br/><br/>
-  원하시는 도장 크기를 입력하시면<br/>
-  가장 적합한 모델을 찾아드립니다.
+      
+<p class="hint">
+  가로·세로 순서에 관계없이 입력하세요.<br/>
+  긴 쪽을 가로로 자동 인식하여 모델을 추천합니다.
+</p>
+
 </p>
     </div>
 
@@ -389,17 +390,32 @@
       `;
     }
 
-    // 사각형 검색
+    
+    // 사각형 검색 (가로·세로 자동 교정)
     document.getElementById('rect-btn').addEventListener('click', () => {
-      const h = parseFloat(document.getElementById('rect-h').value);
-      const w = parseFloat(document.getElementById('rect-w').value);
-      if (!h || !w || h <= 0 || w <= 0) {
+      const inputH = parseFloat(document.getElementById('rect-h').value);
+      const inputW = parseFloat(document.getElementById('rect-w').value);
+
+      if (!Number.isFinite(inputH) || !Number.isFinite(inputW) ||
+          inputH <= 0 || inputW <= 0) {
         resultEl.className = 'result show not-found';
         resultEl.innerHTML = `<div class="error-msg"><strong>입력값을 확인해 주세요</strong>세로와 가로 값을 모두 입력해 주세요.</div>`;
         return;
       }
+
+      // 짧은 쪽은 세로, 긴 쪽은 가로
+      const h = Math.min(inputH, inputW);
+      const w = Math.max(inputH, inputW);
+
+      // 기존 모델 추천 알고리즘 사용
       const model = findRectModel(h, w);
-      renderResult(model, model ? `세로 ${model.h}mm × 가로 ${model.w}mm (요청: ${h} × ${w}mm)` : '');
+
+      renderResult(
+        model,
+        model
+          ? `세로 ${model.h}mm × 가로 ${model.w}mm (요청: ${h} × ${w}mm)`
+          : ''
+      );
     });
 
     // 원형 검색
